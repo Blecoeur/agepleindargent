@@ -20,6 +20,12 @@ export default function EventDetail() {
         ← Back
       </Link>
       <h1 className="text-2xl font-bold">Event Summary</h1>
+      <Link
+        to={`/events/${id}/timeline`}
+        className="text-blue-600 underline"
+      >
+        View Timeline
+      </Link>
       {summary.selling_points.length === 0 ? (
         <p>No data.</p>
       ) : (

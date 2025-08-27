@@ -113,3 +113,22 @@ class SellingPointSummary(BaseModel):
 class EventSummary(BaseModel):
     event_id: str
     selling_points: List[SellingPointSummary]
+
+
+# Timeline schemas
+class TimelineSeries(BaseModel):
+    selling_point_id: str
+    lat: float
+    lng: float
+    cumulative: List[int]
+
+
+class TimelineEvent(BaseModel):
+    start_at: datetime
+    end_at: datetime
+
+
+class EventTimeline(BaseModel):
+    event: TimelineEvent
+    buckets: List[datetime]
+    series: List[TimelineSeries]

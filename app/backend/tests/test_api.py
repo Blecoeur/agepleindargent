@@ -102,3 +102,42 @@ def test_csv_import():
         )
     data = r.json()
     assert data == {"processed": 2, "inserted": 0, "skipped_duplicates": 2, "errors": 0}
+
+
+def test_timeline_endpoint():
+    Base.metadata.drop_all(bind=engine)
+    Base.metadata.create_all(bind=engine)
+
+    start = datetime(2024, 1, 1, 9, 0, 0)
+    end = datetime(2024, 1, 1, 12, 0, 0)
+    payload = {
+        "name": "Timeline Event",
+        "start_at": start.isoformat(),
+        "end_at": end.isoformat(),
+    }
+    r = client.post("/events/", json=payload)
+    event_id = r.json()["id"]
+
+    sp_payload = {"name": "Gate A", "latitude": 0.0, "longitude": 0.0}
+    r = client.post(f"/events/{event_id}/selling-points", json=sp_payload)
+    sp_id = r.json()["id"]
+
+    ept_payload = {"provider": "worldline", "label": "Terminal 1"}
+    client.post(f"/events/selling-points/{sp_id}/epts", json=ept_payload)
+
+    sample = Path(__file__).resolve().parents[1] / "samples" / "worldline_mock.csv"
+    with sample.open("rb") as f:
+        r = client.post(
+            f"/events/{event_id}/imports",
+            data={"parser": "mock_worldline"},
+            files={"file": ("worldline_mock.csv", f, "text/csv")},
+        )
+    assert r.status_code == 200
+    assert r.json()["inserted"] == 2
+
+    r = client.get(f"/events/{event_id}/timeline", params={"bucket": "1h"})
+    assert r.status_code == 200
+    data = r.json()
+    assert data["buckets"][0].startswith("2024-01-01T09:00:00")
+    series = data["series"][0]
+    assert series["cumulative"] == [0, 1000, 3000, 3000]

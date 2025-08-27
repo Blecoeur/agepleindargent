@@ -6,3 +6,4 @@ pydantic-settings
 alembic
 pytest
 httpx
+python-multipart
