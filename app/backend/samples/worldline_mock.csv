@@ -1,0 +1,3 @@
+selling_point,ept,amount_cents,currency,occurred_at,card_last4
+Gate A,Terminal 1,1000,CHF,2024-01-01T10:00:00,1234
+Gate A,Terminal 1,2000,CHF,2024-01-01T11:00:00,5678
