@@ -1,9 +1,11 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form
 from sqlalchemy.orm import Session, joinedload
 from sqlalchemy import func
+from sqlalchemy.exc import IntegrityError
 
 from .. import models, schemas
 from ..db import get_db
+from ..parsers import PARSER_REGISTRY
 
 router = APIRouter(prefix="/events", tags=["events"])
 
@@ -131,6 +133,70 @@ def delete_ept(sp_id: str, ept_id: str, db: Session = Depends(get_db)):
     db.delete(ept)
     db.commit()
     return {"ok": True}
+
+
+# CSV Import
+@router.post("/{event_id}/imports", response_model=schemas.ImportSummary)
+def import_csv(
+    event_id: str,
+    parser: str = Form(...),
+    file: UploadFile = File(...),
+    ept_id: str | None = Form(None),
+    db: Session = Depends(get_db),
+):
+    parser_impl = PARSER_REGISTRY.get(parser)
+    if not parser_impl:
+        raise HTTPException(status_code=400, detail="Unknown parser")
+
+    processed = inserted = skipped = errors = 0
+    for tx in parser_impl.parse(file.file):
+        processed += 1
+        sp = (
+            db.query(models.SellingPoint)
+            .filter_by(event_id=event_id, name=tx.selling_point_name)
+            .first()
+        )
+        if not sp:
+            errors += 1
+            continue
+        ept = None
+        if tx.ept_label:
+            ept = (
+                db.query(models.EPT)
+                .filter_by(selling_point_id=sp.id, label=tx.ept_label)
+                .first()
+            )
+        if not ept and ept_id:
+            ept = db.get(models.EPT, ept_id)
+        if not ept:
+            errors += 1
+            continue
+
+        t = models.Transaction(
+            event_id=event_id,
+            selling_point_id=sp.id,
+            ept_id=ept.id,
+            amount_cents=tx.amount_cents,
+            currency=tx.currency,
+            occurred_at=tx.occurred_at,
+            card_last4=tx.card_last4,
+            source=parser,
+            source_row_hash=tx.source_row_hash,
+        )
+        db.add(t)
+        try:
+            db.commit()
+            inserted += 1
+        except IntegrityError:
+            db.rollback()
+            skipped += 1
+        except Exception:
+            db.rollback()
+            errors += 1
+
+    return schemas.ImportSummary(
+        processed=processed, inserted=inserted, skipped_duplicates=skipped, errors=errors
+    )
 
 
 # Summary endpoint

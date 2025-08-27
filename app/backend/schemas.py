@@ -78,6 +78,24 @@ class EPTRead(EPTBase):
         orm_mode = True
 
 
+# Transactions / Imports
+class TransactionIn(BaseModel):
+    selling_point_name: str
+    ept_label: Optional[str] = None
+    amount_cents: int
+    currency: str
+    occurred_at: datetime
+    card_last4: str
+    source_row_hash: str
+
+
+class ImportSummary(BaseModel):
+    processed: int
+    inserted: int
+    skipped_duplicates: int
+    errors: int
+
+
 # Summary schemas
 class EPTSummary(BaseModel):
     id: str
