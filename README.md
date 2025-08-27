@@ -47,4 +47,15 @@ A transaction is a record of a purchase made at a selling point using an EPT. It
    docker compose up --build
    ```
 
+3. Apply migrations:
+   ```sh
+   cd ../backend
+   alembic upgrade head
+   ```
+
+4. Seed sample data:
+   ```sh
+   python -m backend.seed
+   ```
+
 The frontend is available at http://localhost:5173 and the API at http://localhost:8000 (GET /health).
