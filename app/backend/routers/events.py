@@ -2,6 +2,8 @@ from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form
 from sqlalchemy.orm import Session, joinedload
 from sqlalchemy import func
 from sqlalchemy.exc import IntegrityError
+from datetime import timedelta, datetime
+from collections import defaultdict
 
 from .. import models, schemas
 from ..db import get_db
@@ -249,3 +251,64 @@ def event_summary(event_id: str, db: Session = Depends(get_db)):
         )
 
     return schemas.EventSummary(event_id=event.id, selling_points=selling_points)
+
+
+# Timeline endpoint
+@router.get("/{event_id}/timeline", response_model=schemas.EventTimeline)
+def event_timeline(event_id: str, bucket: str = "5m", db: Session = Depends(get_db)):
+    event = db.get(models.Event, event_id)
+    if not event:
+        raise HTTPException(status_code=404, detail="Event not found")
+
+    if not bucket[:-1].isdigit() or bucket[-1] not in {"s", "m", "h"}:
+        raise HTTPException(status_code=400, detail="Invalid bucket")
+    value = int(bucket[:-1])
+    if bucket[-1] == "s":
+        delta = timedelta(seconds=value)
+    elif bucket[-1] == "m":
+        delta = timedelta(minutes=value)
+    else:
+        delta = timedelta(hours=value)
+
+    buckets: list[datetime] = []
+    current = event.start_at
+    while current <= event.end_at:
+        buckets.append(current)
+        current += delta
+
+    sps = db.query(models.SellingPoint).filter_by(event_id=event_id).all()
+    txs = (
+        db.query(models.Transaction)
+        .filter(models.Transaction.event_id == event_id)
+        .order_by(models.Transaction.selling_point_id, models.Transaction.occurred_at)
+        .all()
+    )
+    sp_tx: dict[str, list[models.Transaction]] = defaultdict(list)
+    for t in txs:
+        sp_tx[t.selling_point_id].append(t)
+
+    series: list[schemas.TimelineSeries] = []
+    for sp in sps:
+        tx_list = sp_tx.get(sp.id, [])
+        cum: list[int] = []
+        running = 0
+        idx = 0
+        for bucket_time in buckets:
+            while idx < len(tx_list) and tx_list[idx].occurred_at <= bucket_time:
+                running += tx_list[idx].amount_cents
+                idx += 1
+            cum.append(running)
+        series.append(
+            schemas.TimelineSeries(
+                selling_point_id=sp.id,
+                lat=sp.latitude,
+                lng=sp.longitude,
+                cumulative=cum,
+            )
+        )
+
+    return schemas.EventTimeline(
+        event=schemas.TimelineEvent(start_at=event.start_at, end_at=event.end_at),
+        buckets=buckets,
+        series=series,
+    )
