@@ -1,6 +1,7 @@
 import { useParams, Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { fetchEventSummary, EventSummary } from '../api';
+import { fetchEventSummary} from '../api';
+import type { EventSummary } from '../api';
 
 export default function EventDetail() {
   const { id } = useParams();

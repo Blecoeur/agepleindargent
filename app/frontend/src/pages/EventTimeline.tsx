@@ -2,7 +2,8 @@ import { useParams, Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { MapContainer, TileLayer, CircleMarker } from 'react-leaflet';
 import { useState, useEffect } from 'react';
-import { fetchEventTimeline, EventTimeline } from '../api';
+import { fetchEventTimeline} from '../api';
+import type { EventTimeline } from '../api';
 import 'leaflet/dist/leaflet.css';
 
 export default function EventTimelinePage() {

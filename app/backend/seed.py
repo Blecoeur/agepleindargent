@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta
 
-from .db import SessionLocal
-from .models import Event, SellingPoint, EPT, EPTProvider
+from db import SessionLocal
+from models import Event, SellingPoint, EPT, EPTProvider
 
 
 def run() -> None:

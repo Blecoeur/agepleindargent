@@ -3,7 +3,7 @@ import hashlib
 from datetime import datetime
 from typing import Iterable, Protocol, IO
 
-from .schemas import TransactionIn
+from schemas import TransactionIn
 
 
 class BaseParser(Protocol):

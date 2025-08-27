@@ -3,7 +3,8 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { createEvent, fetchEvents, Event } from '../api';
+import { createEvent, fetchEvents } from '../api';
+import type { Event } from '../api';
 
 const schema = z.object({
   name: z.string().min(1),

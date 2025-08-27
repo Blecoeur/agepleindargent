@@ -5,9 +5,9 @@ from sqlalchemy.exc import IntegrityError
 from datetime import timedelta, datetime
 from collections import defaultdict
 
-from .. import models, schemas
-from ..db import get_db
-from ..parsers import PARSER_REGISTRY
+import models, schemas
+from db import get_db
+from parsers import PARSER_REGISTRY
 
 router = APIRouter(prefix="/events", tags=["events"])
 

@@ -3,7 +3,7 @@ from typing import List, Optional
 
 from pydantic import BaseModel
 
-from .models import EPTProvider
+from models import EPTProvider
 
 
 # Event
