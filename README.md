@@ -35,3 +35,16 @@ A transaction is a record of a purchase made at a selling point using an EPT. It
 - Add entries to the event. It consists of a timestamp, an entry point, and a ticket type (like "1 day pass", "full pass", etc). 
 - View entries in the timeline view
 - Summaries export (CSV, PDF)
+## Development
+
+1. Copy environment file:
+   ```sh
+   cp app/infra/.env.example app/infra/.env
+   ```
+2. Start the stack:
+   ```sh
+   cd app/infra
+   docker compose up --build
+   ```
+
+The frontend is available at http://localhost:5173 and the API at http://localhost:8000 (GET /health).

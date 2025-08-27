@@ -1,0 +1,15 @@
+# General
+*.pyc
+__pycache__/
+.env
+.env.*
+
+# Node
+node_modules/
+dist/
+
+# Python
+*.egg-info/
+
+# Docker
+volumes/
