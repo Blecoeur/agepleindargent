@@ -11,6 +11,8 @@ export interface EPTSummary {
   total_cents: number;
 }
 
+export type EPTProvider = 'worldline' | 'sumup' | 'other';
+
 export interface SellingPointSummary {
   id: string;
   name: string;
@@ -67,5 +69,18 @@ export async function fetchEventSummary(id: string): Promise<EventSummary> {
 export async function fetchEventTimeline(id: string): Promise<EventTimeline> {
   const res = await fetch(`${API_URL}/events/${id}/timeline`);
   if (!res.ok) throw new Error('Failed to fetch timeline');
+  return res.json();
+}
+
+export async function createEPT(
+  spId: string,
+  data: { provider: EPTProvider; label: string },
+): Promise<EPTSummary> {
+  const res = await fetch(`${API_URL}/events/selling-points/${spId}/epts`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) throw new Error('Failed to create ept');
   return res.json();
 }

@@ -1,5 +1,19 @@
-import { Link } from 'react-router-dom';
+import { Link as RouterLink } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import {
+  Box,
+  Heading,
+  Link,
+  Table,
+  Thead,
+  Tbody,
+  Tr,
+  Th,
+  Td,
+  Input,
+  Button,
+  Flex,
+} from '@chakra-ui/react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -36,36 +50,44 @@ export default function EventsList() {
   const onSubmit = (data: FormData) => mutation.mutate(data);
 
   return (
-    <div className="p-8 space-y-4">
-      <h1 className="text-2xl font-bold">Events</h1>
+    <Box p={8}>
+      <Heading size="lg" mb={4}>
+        Events
+      </Heading>
 
-      <form onSubmit={handleSubmit(onSubmit)} className="flex gap-2">
-        <input {...register('name')} placeholder="Name" className="border p-1" />
-        <input {...register('start_at')} type="datetime-local" className="border p-1" />
-        <input {...register('end_at')} type="datetime-local" className="border p-1" />
-        <button type="submit" className="bg-blue-500 text-white px-2 py-1">Create</button>
+      <form onSubmit={handleSubmit(onSubmit)}>
+        <Flex gap={2} mb={4} wrap="wrap">
+          <Input {...register('name')} placeholder="Name" />
+          <Input {...register('start_at')} type="datetime-local" />
+          <Input {...register('end_at')} type="datetime-local" />
+          <Button type="submit" colorScheme="blue">
+            Create
+          </Button>
+        </Flex>
       </form>
 
-      <table className="min-w-full border">
-        <thead>
-          <tr className="bg-gray-100">
-            <th className="p-2 text-left">Name</th>
-            <th className="p-2">Start</th>
-            <th className="p-2">End</th>
-          </tr>
-        </thead>
-        <tbody>
+      <Table variant="simple">
+        <Thead>
+          <Tr>
+            <Th>Name</Th>
+            <Th>Start</Th>
+            <Th>End</Th>
+          </Tr>
+        </Thead>
+        <Tbody>
           {events?.map((ev) => (
-            <tr key={ev.id} className="border-t">
-              <td className="p-2 text-blue-600 underline">
-                <Link to={`/events/${ev.id}`}>{ev.name}</Link>
-              </td>
-              <td className="p-2">{new Date(ev.start_at).toLocaleString()}</td>
-              <td className="p-2">{new Date(ev.end_at).toLocaleString()}</td>
-            </tr>
+            <Tr key={ev.id}>
+              <Td>
+                <Link as={RouterLink} to={`/events/${ev.id}`} color="blue.500">
+                  {ev.name}
+                </Link>
+              </Td>
+              <Td>{new Date(ev.start_at).toLocaleString()}</Td>
+              <Td>{new Date(ev.end_at).toLocaleString()}</Td>
+            </Tr>
           ))}
-        </tbody>
-      </table>
-    </div>
+        </Tbody>
+      </Table>
+    </Box>
   );
 }
