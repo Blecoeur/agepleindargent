@@ -1,20 +1,14 @@
-import { useEffect, useState } from "react";
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import EventsList from './pages/EventsList';
+import EventDetail from './pages/EventDetail';
 
-function App() {
-  const [status, setStatus] = useState<string>("loading");
-
-  useEffect(() => {
-    fetch("http://localhost:8000/health")
-      .then((res) => res.json())
-      .then((data) => setStatus(data.status))
-      .catch(() => setStatus("error"));
-  }, []);
-
+export default function App() {
   return (
-    <div className="p-8">
-      <h1 className="text-2xl font-bold mb-4">Health status: {status}</h1>
-    </div>
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<EventsList />} />
+        <Route path="/events/:id" element={<EventDetail />} />
+      </Routes>
+    </BrowserRouter>
   );
 }
-
-export default App;
